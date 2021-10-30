@@ -3,6 +3,7 @@ import logo from "./logo.svg";
 import OneGraphAuth from "onegraph-auth";
 import fetchSupportedServicesQuery from "./fetchSupportedServices.js";
 import "./App.css";
+import { LoginWithTwitter } from "./TwitterSignIn";
 
 const appId = process.env.REACT_APP_ONE_GRAPH_APP_ID;
 
@@ -11,14 +12,10 @@ const auth = new OneGraphAuth({
 });
 
 const gitHubLink =
-  process.env.GITHUB_URL ||
-  "https://github.com/OneGraph/authguardian-react-starter";
+  process.env.GITHUB_URL || "https://github.com/OneGraph/authguardian-react-starter";
 
 const exampleUsage = (appId, service) => {
-  const componentName = `LoginWith${service.friendlyServiceName.replace(
-    /\W/g,
-    ""
-  )}`;
+  const componentName = `LoginWith${service.friendlyServiceName.replace(/\W/g, "")}`;
   return `import OneGraphAuth from "onegraph-auth";
 
 const auth = new OneGraphAuth({
@@ -57,10 +54,8 @@ function corsPrompt(appId) {
             className="App-link"
             href={`https://www.onegraph.com/dashboard/app/${appId}?add-cors-origin=${origin}`}
             target="_blank"
-            rel="noopener noreferrer"
-          >
-            Please click here to add {origin} to your allowed CORS origins and
-            then refresh
+            rel="noopener noreferrer">
+            Please click here to add {origin} to your allowed CORS origins and then refresh
           </a>
         </li>
       </ul>
@@ -69,13 +64,7 @@ function corsPrompt(appId) {
 }
 
 const gitHubIcon = (
-  <svg
-    role="img"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-    width="20px"
-    height="20px"
-  >
+  <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px">
     <title>GitHub icon</title>
     <path
       fill="white"
@@ -93,8 +82,7 @@ function navBar(appId) {
             className="App-link"
             href={`https://www.onegraph.com/dashboard/app/${appId}/auth/auth-guardian`}
             target="_blank"
-            rel="noopener noreferrer"
-          >
+            rel="noopener noreferrer">
             Edit your rules
           </a>
         </li>
@@ -103,8 +91,7 @@ function navBar(appId) {
             className="App-link"
             href="https://www.onegraph.com/docs/auth_guardian.html"
             target="_blank"
-            rel="noopener noreferrer"
-          >
+            rel="noopener noreferrer">
             AuthGuardian Docs
           </a>
         </li>
@@ -118,7 +105,7 @@ function navBar(appId) {
   );
 }
 
-function App() {
+function Example() {
   const [state, setState] = useState({
     supportedServices: [],
     corsConfigurationRequired: null,
@@ -137,10 +124,7 @@ function App() {
       })
       // Detect if we haven't configured CORS yet
       .catch((error) => {
-        if (
-          error.message &&
-          error.message.match("not allowed by Access-Control-Allow-Origin")
-        ) {
+        if (error.message && error.message.match("not allowed by Access-Control-Allow-Origin")) {
           setState((oldState) => {
             return { ...oldState, corsConfigurationRequired: true };
           });
@@ -163,7 +147,7 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="AppExample">
       {state.corsConfigurationRequired ? corsPrompt(appId) : navBar(appId)}
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
@@ -173,29 +157,20 @@ function App() {
         <textarea
           className="jwt-preview"
           rows={15}
-          value={
-            !!decoded ? JSON.stringify(decoded, null, 2) : "No OneGraph JWT"
-          }
-          readOnly={true}
-        ></textarea>
+          value={!!decoded ? JSON.stringify(decoded, null, 2) : "No OneGraph JWT"}
+          readOnly={true}></textarea>
         <textarea
           className="jwt-preview"
           rows={1}
-          value={
-            !!accessToken && !!accessToken.accessToken
-              ? accessToken.accessToken
-              : ""
-          }
-          readOnly={true}
-        ></textarea>
+          value={!!accessToken && !!accessToken.accessToken ? accessToken.accessToken : ""}
+          readOnly={true}></textarea>
         <button
           onClick={() => {
             auth.destroy();
             setState(() => {
               return { supportedServices: state.supportedServices };
             });
-          }}
-        >
+          }}>
           Clear local JWT
         </button>
         <p style={{ textAlign: "left" }}>
@@ -214,12 +189,9 @@ function App() {
                       mostRecentService: service,
                     };
                   });
-                }}
-              >
+                }}>
                 {!!state[service.slug] ? " ✓" : ""}{" "}
-                <p className="service-button-name">
-                  {service.friendlyServiceName}
-                </p>
+                <p className="service-button-name">{service.friendlyServiceName}</p>
               </button>
             );
           })}
@@ -227,19 +199,33 @@ function App() {
         {!state.mostRecentService ? null : (
           <>
             <h3>
-              Add 'Sign in with {state.mostRecentService.friendlyServiceName}'
-              to your React app
+              Add 'Sign in with {state.mostRecentService.friendlyServiceName}' to your React app
             </h3>
             <textarea
               className="jwt-preview"
               style={{ marginBottom: "250px" }}
               rows={15}
               value={exampleUsage(appId, state.mostRecentService)}
-              readOnly={true}
-            ></textarea>
+              readOnly={true}></textarea>
           </>
         )}
       </header>
+    </div>
+  );
+}
+
+function App() {
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  return (
+    <div className="app">
+      <h1>Sup</h1>
+      <LoginWithTwitter
+        auth={auth}
+        onLogin={() => {
+          setLoggedIn(true);
+        }}
+      />
+      {loggedIn ? <div>Logged in!</div> : <div>Unauthorized. Please log in with Twitter</div>}
     </div>
   );
 }
