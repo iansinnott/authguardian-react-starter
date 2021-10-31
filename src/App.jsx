@@ -216,17 +216,62 @@ function Example() {
 }
 
 function App() {
+  let tkn = null;
+  try {
+    tkn = JSON.parse(atob(auth.accessToken().accessToken.split(".")[1]));
+  } catch (err) {
+    console.warn("[warn] Could not parse token", err);
+  }
+  // const [loggedIn, setLoggedIn] = React.useState(!!tkn);
+  // const [token, setToken] = React.useState(tkn);
+  //
   const [loggedIn, setLoggedIn] = React.useState(false);
+  const [token, setToken] = React.useState(null);
+
+  React.useEffect(() => {
+    window.auth = auth;
+  }, []);
+
   return (
     <div className="app">
       <h1>Sup</h1>
-      <LoginWithTwitter
-        auth={auth}
-        onLogin={() => {
-          setLoggedIn(true);
-        }}
-      />
-      {loggedIn ? <div>Logged in!</div> : <div>Unauthorized. Please log in with Twitter</div>}
+      {!token && (
+        <LoginWithTwitter
+          auth={auth}
+          onLogin={(tkn) => {
+            setLoggedIn(true);
+            setToken(tkn);
+          }}
+        />
+      )}
+      {loggedIn ? (
+        <div className="" style={{ marginTop: 10 }}>
+          Logged in!
+          {token && (
+            <p>
+              Heyo{" "}
+              <span style={{ color: "teal", fontWeight: "bold" }}>
+                @{token?.oauth?.twitter?.username}
+              </span>
+              <button
+                onClick={(e) => {
+                  auth.logout("twitter").then(() => {
+                    setLoggedIn(false);
+                    setToken(null);
+                  });
+                }}
+                className=""
+                style={{ display: "block", marginTop: 10 }}>
+                Log Out
+              </button>
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="" style={{ marginTop: 10 }}>
+          Unauthorized. Please log in with Twitter
+        </div>
+      )}
     </div>
   );
 }
